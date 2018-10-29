@@ -2,7 +2,7 @@
 
 :: ----------------------
 :: KUDU Deployment Script
-:: Version: 1.0.17
+:: Version: 1.0.15
 :: ----------------------
 
 :: Prerequisites
@@ -81,7 +81,7 @@ IF DEFINED KUDU_SELECT_NODE_VERSION_CMD (
 
 goto :EOF
 
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 :: Deployment
 :: ----------
 
@@ -100,7 +100,7 @@ IF EXIST "%DEPLOYMENT_SOURCE%\package.json" (
 )
 
 :: 3. Angular Prod Build
-IF EXIST "%DEPLOYMENT_SOURCE%/.angular.json" (
+IF EXIST "%DEPLOYMENT_SOURCE%/.angular-cli.json" (
 echo Building App in %DEPLOYMENT_SOURCE%…
 pushd "%DEPLOYMENT_SOURCE%"
 call :ExecuteCmd !NPM_CMD! run build
