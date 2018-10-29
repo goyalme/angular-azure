@@ -99,23 +99,27 @@ selectNodeVersion () {
 # ----------
 
 echo Handling node.js deployment.
-
-# 1. KuduSync
-if [[ "$IN_PLACE_DEPLOYMENT" -ne "1" ]]; then
-  "$KUDU_SYNC_CMD" -v 50 -f "$DEPLOYMENT_SOURCE" -t "$DEPLOYMENT_TARGET" -n "$NEXT_MANIFEST_PATH" -p "$PREVIOUS_MANIFEST_PATH" -i ".git;.hg;.deployment;deploy.sh"
-  exitWithMessageOnError "Kudu Sync failed"
+if [ -e "$DEPLOYMENT_SOURCE/package.json" ]; then
+cd "$DEPLOYMENT_SOURCE"
+eval $NPM_CMD installed
+exitWithMessageOnError "npm failed"
+cd - > /dev/null
 fi
 
-# 2. Select node version
-selectNodeVersion
+if [ -e "$DEPLOYMENT_SOURCE/package.json" ]; then
+cd "$DEPLOYMENT_SOURCE"
+eval ./node_modules/@angular/cli/bin/ng build eval $NPM_CMD install
+exitWithMessageOnError "npm build failed"
+cd - > /dev/null
+fi
 
-# 3. Install npm packages
-if [ -e "$DEPLOYMENT_TARGET/package.json" ]; then
-  cd "$DEPLOYMENT_TARGET"
-  echo "Running $NPM_CMD install --production"
-  eval $NPM_CMD install --production
-  exitWithMessageOnError "npm failed"
-  cd - > /dev/null
+if [ "$IN_PLACE_DEPLOYMENT" -ne "1" ]; then
+"$KUDU_SYNC_CMD" -v 50 -f "$DEPLOYMENT_SOURCE/dist/" -t "$DEPLOYMENT_TARGET" \
+-n "$NEXT_MANIFEST_PATH" -p "$PREVIOUS_MANIFEST_PATH" \
+-i "e2e;node_modules;src;.angular-cli.json;.deployment;.gitignore;az.ps1;deploy.sh; \                              package.json;README.md;tsconfig.json;"
+exitWithMessageOnError "Kudu Sync failed"
+cd - > /dev/null
+
 fi
 
 ##################################################################################################################################
